@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { isEmpty, size }  from 'lodash'
 //import shortid from 'shortid'
-import { addDocument, getCollection } from './actions'
+import { addDocument, getCollection, updateDocument, deleteDocument } from './actions'
 
 function App() {
   const [task, setTask] = useState("")
@@ -48,7 +48,13 @@ function App() {
     setTask("")
   }
 
-  const deleteTask = (id) => {
+  const deleteTask = async(id) => {
+    const result = await deleteDocument("tasks", id)
+    if (!result.statusResponse){
+      setError(result.error)
+      return
+    }
+    
     const filteredTask = tasks.filter(task => task.id !== id)
     setTasks(filteredTask)
   }
@@ -59,13 +65,19 @@ function App() {
     setId(theTask.id)
   }
 
-  const saveTask = (e) => {
+  const saveTask = async(e) => {
     e.preventDefault()
 
     if (!validForm()){
       return
     }
     
+    const result = await updateDocument("tasks", id, { name : task })
+    if (!result.statusResponse){
+      setError(result.error)
+      return
+    }
+
     const editedTasks = tasks.map(item => item.id === id ? { id, name: task } : item)
     setTasks(editedTasks)
     setEditMode(false)
